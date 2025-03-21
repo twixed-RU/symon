@@ -37,8 +37,9 @@ import javax.swing.UIManager;
 
 public class Main {
     private final static Logger logger = LoggerFactory.getLogger(Main.class.getName());
+    private static boolean autoStart;
 
-     /**
+    /**
      * Main entry point to the simulator. Creates a simulator and shows the main
      * window.
      *
@@ -54,6 +55,7 @@ public class Main {
         options.addOption(new Option("c", "cpu", true, "Specify CPU type."));
         options.addOption(new Option("r", "rom", true, "Specify ROM file."));
         options.addOption(new Option("b", "brk", false, "Halt on BRK"));
+        options.addOption(new Option("s", "start", false, "Start machine after loading."));
 
         CommandLineParser parser = new DefaultParser();
 
@@ -77,6 +79,9 @@ public class Main {
                         break;
                     case "beneater":
                         machineClass = BenEaterMachine.class;
+                        break;
+                    case "6502xt":
+                        machineClass = XT6502.class;
                         break;
                     default:
                         logger.error("Could not start Symon. Unknown machine type {}", machine);
@@ -109,10 +114,14 @@ public class Main {
             if (line.hasOption("brk")) {
                 haltOnBreak = true;
             }
+            
+            if (line.hasOption("start")) {
+                autoStart = true;
+            }
 
             while (true) {
                 if (machineClass == null) {
-                    Object[] possibilities = {"Symon", "Multicomp", "Simple", "BenEater"};
+                    Object[] possibilities = {"Symon", "Multicomp", "Simple", "BenEater", "6502XT"};
                     String s = (String)JOptionPane.showInputDialog(
                             null,
                             "Please choose the machine type to be emulated:",
@@ -129,6 +138,8 @@ public class Main {
                         machineClass = SimpleMachine.class;
                     } else if (s != null && s.equals("BenEater")) {
                         machineClass = BenEaterMachine.class;
+                    } else if (s != null && s.equals("6502XT")) {
+                        machineClass = XT6502.class;
                     } else {
                         machineClass = SymonMachine.class;
                     }
@@ -145,6 +156,9 @@ public class Main {
                         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                         // Create the main UI window
                         simulator.createAndShowUi();
+                        if (autoStart) {
+                            simulator.start();
+                        }
                     } catch (Exception e) {
                         logger.error("Error during Symon UI initialization: {}", e.getMessage());
                         System.exit(-1);

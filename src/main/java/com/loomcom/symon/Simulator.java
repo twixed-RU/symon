@@ -125,6 +125,12 @@ public class Simulator {
 
     private final boolean haltOnBreak;
 
+    public void start() {
+        if (runLoop == null || !runLoop.isRunning()) {
+            Simulator.this.handleStart();
+        }
+    }
+
     public enum MainCommand {
         NONE,
         SELECTMACHINE
